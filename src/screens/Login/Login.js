@@ -51,7 +51,7 @@ class Login extends Component {
 
                     </script>
 
-                    <FormControl className="formDiv" style="display:none;">
+                    <FormControl className="formDiv" >
 
                         <Typography variant="display2" >
                             Sign In
