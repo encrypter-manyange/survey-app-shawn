@@ -21,7 +21,7 @@ class App extends Component {
         {
           name: 'HTML',
           image: require("./images/html.jpg") ,
-          description:'HTML stands for HyperText Markup Language, It defines the structure of a Web document by using a variety of tags and attributes.',
+          description:'HTMLs stands for HyperText Markup Language, It defines the structure of a Web document by using a variety of tags and attributes.',
           subQuiz: [
             {
               name: 'Quiz 1', questions: '3', time: '30 sec', score: false,
