@@ -19,6 +19,18 @@ import FormLabel from '@material-ui/core/FormLabel';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Typography from '@material-ui/core/Typography';
+import firebase from 'firebase';
+
+const config = {
+    apiKey: "AIzaSyAAVqCls4vgcdHTBrN2wBLVuaFhfFLQO4k",
+    authDomain: "chronicle-health-app.firebaseapp.com",
+    databaseURL: "https://chronicle-health-app.firebaseio.com",
+    projectId: "chronicle-health-app",
+    storageBucket: "chronicle-health-app.appspot.com",
+    messagingSenderId: "714488781454"
+};
+firebase.initializeApp(config);
+
 
 class QuizList extends Component {
   constructor() {
@@ -30,11 +42,13 @@ class QuizList extends Component {
 
       sec: 30,
       min: 0,
-
+        correctpos:0,
       correct: 0,
+        whichcorrect: [],
       scored: false,
 
       similey: null,
+      quizid: null,
 
     }
     this.handleChange = this.handleChange.bind(this);
@@ -50,7 +64,7 @@ class QuizList extends Component {
 
   async updating() {
     const { started, qstnNo, onPress } = this.props;
-    const { correct, radioVal } = this.state;
+    const { correct, radioVal,whichcorrect } = this.state;
 
     // var radio = document.querySelector("input[name='option']:checked");
 
@@ -62,17 +76,18 @@ class QuizList extends Component {
       if ((qstnNo === started.qArr.length - 1) && (started.qArr[qstnNo].answer.match(radioVal))) {
 
         await this.setState({
-          correct: correct + 1,
+            correct: correct + 1,
           min: 0,
           sec: 0
-        })
-
+        });
+         //alert(this.state.whichcorrect);
       }
       else
         if ((qstnNo === started.qArr.length - 1) && !(started.qArr[qstnNo].answer.match(radioVal))) {
 
           await this.setState({
-            min: 0,
+              whichcorrect:[...this.state.whichcorrect, qstnNo],
+              min: 0,
             sec: 0
           })
 
@@ -81,15 +96,17 @@ class QuizList extends Component {
           if (!(qstnNo === started.qArr.length - 1) && (started.qArr[qstnNo].answer.match(radioVal))) {
 
             await this.setState({
-              correct: correct + 1,
-              radioVal: null,
-            })
+                correct: correct + 1,
+                radioVal: null,
+            });
+             // alert(this.state.whichcorrect);
 
             onPress(qstnNo);
           }
           else {
             await this.setState({
-              radioVal: null,
+                whichcorrect:[...this.state.whichcorrect, qstnNo],
+                radioVal: null,
             })
             onPress(qstnNo);
           }
@@ -110,12 +127,24 @@ class QuizList extends Component {
   }
 
   saveScore() {
-    const { started } = this.props;
+    const { started,subQuizID } = this.props;
     const { scored, date } = this.state;
 
     started.score = scored;
     started.attemptDate = date.toLocaleDateString();
     started.attemptTime = date.toLocaleTimeString();
+      const db = firebase.firestore();
+
+      db.collection("quizresults").add({
+          score: scored,
+          quiz: subQuizID,
+      })
+          .then(function(docRef) {
+              console.log("Document written with ID: ", docRef.id);
+          })
+          .catch(function(error) {
+              console.error("Error adding document: ", error);
+          });
 
     if (scored == 100) {
       this.setState({
@@ -176,8 +205,8 @@ class QuizList extends Component {
   }
 
   render() {
-    const { started, qstnNo, back, quizName, subQuizName, logout } = this.props;
-    const { correct, scored, min, sec } = this.state;
+    const { started, qstnNo, back, quizName, subQuizName, logout,subQuizID } = this.props;
+    const { correct, scored, min, sec, whichcorrect } = this.state;
     return (
       <div style={{ margin: '80px 3% 3% 3%' }}>
 
@@ -187,19 +216,23 @@ class QuizList extends Component {
           <div>
             <Header logout={logout} />
 
-            <Typography variant="display1" >
-              {quizName}({subQuizName})
-            </Typography>
-            <br />
+
             <div className='resultDiv'>
+                <Typography variant="display1" >
+                    {quizName}:<br/>{subQuizName}
+                </Typography>
+                <br />
+
               <div >
                 <br />
                 <br />
-                <CircularProgress size={200} thickness={2} variant="static" value={scored} />
+               <div style={{ position: 'relative' }}>
+                   <CircularProgress size={200} thickness={2} variant="static" value={scored} />
                 {this.state.similey}
                 <Typography variant="headline" >
                   {scored} %
                 </Typography>
+               </div>
                 <br />
                 <Typography variant="subheading" >
                   Total Questions: {started.qArr.length}
@@ -208,11 +241,33 @@ class QuizList extends Component {
                   Correct: {correct}
                 </Typography>
 
+
               </div>
+                <div>
+                    {whichcorrect.length > 0 &&
+                    <b>Below are the answeres to the questions you got wrong.</b>}
+                    <ul style={{ listStyle: 'none' }}>
+                        {whichcorrect.length > 0 && whichcorrect.map((a,c)=> {
+                            var answeris = "";
+                            if(started.qArr[c].answer.match('1')){
+                                answeris = started.qArr[c].option1;
+                            }else if(started.qArr[c].answer.match('2')){
+                                answeris = started.qArr[c].option2;
+
+                            }else if(started.qArr[c].answer.match('3')){
+                                answeris = started.qArr[c].option3;
+
+                            }else if(started.qArr[c].answer.match('4')){
+                                answeris = started.qArr[c].option4;
+                            }
+                            return (<li><b>{c+1}) {started.qArr[c].question}</b><br/>{answeris}</li>);
+                        })}
+                    </ul>
+                </div>
               <Button className="backBtn" size='large' variant="contained" color="primary" onClick={() => back()}>
                 back
               </Button>
-            </div>
+           </div>
           </div>
           :
           <div>
