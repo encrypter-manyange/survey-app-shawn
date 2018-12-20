@@ -245,7 +245,7 @@ class QuizList extends Component {
               </div>
                 <div>
                     {whichcorrect.length > 0 &&
-                    <b>Below are the answeres to the questions you got wrong.</b>}
+                    <b>Below are the answers to the questions you got wrong.</b>}
                     <ul style={{ listStyle: 'none' }}>
                         {whichcorrect.length > 0 && whichcorrect.map((a,c)=> {
                             var answeris = "";
