@@ -40,8 +40,8 @@ class QuizList extends Component {
 
       radioVal: null,
 
-      sec: 30,
-      min: 0,
+      sec: 0,
+      min: 5,
         correctpos:0,
       correct: 0,
         whichcorrect: [],
